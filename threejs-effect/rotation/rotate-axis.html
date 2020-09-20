@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="/lib/three.js"></script>
+    <script>
+        class Program {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.mesh1 = null;
+                this.init();
+            }
+
+            initScene() {
+                this.scene = new THREE.Scene();
+            }
+
+            initCamera() {
+                this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+                this.camera.position.z = 2;
+                this.camera.position.x = 2;
+                this.camera.position.y = 2;
+                this.camera.up.x = 0;
+                this.camera.up.y = 1;
+                this.camera.up.z = 0;
+                this.camera.lookAt(0, 0, 0);
+            }
+
+            initRenderer() {
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(this.renderer.domElement);
+                this.renderer.setClearColor(0xffffff, 1.0);
+            }
+
+            initLight() {
+                const light = new THREE.DirectionalLight(0xFFffff, 1.0);
+                light.position.set(2, 3, 4);
+                this.scene.add(light);
+            }
+
+            init() {
+                this.initScene();
+                this.initCamera();
+                this.initLight();
+                this.addGrid();
+                this.initRenderer();
+                window.addEventListener('resize', () => {
+                    this.windowResize();
+                })
+            }
+
+            render() {
+                this.renderer.clear();
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            windowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+                this.render();
+            }
+
+            addGrid() {
+                const grid = new THREE.GridHelper(20, 20);
+                this.scene.add(grid);
+            }
+
+            placeObject() {
+                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                // geometry.faces.forEach(face => {
+                //     const hex = Math.random() * 0xffffff;
+                //     face.color.setHex(hex);
+                // })
+                for (let i = 0; i < geometry.faces.length; i += 2) {
+                    const hex = Math.random() * 0xffffff;
+                    geometry.faces[i].color.setHex(hex);
+                    geometry.faces[i + 1].color.setHex(hex);
+                }
+
+                const material = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
+                this.mesh1 = new THREE.Mesh(geometry, material);
+                this.scene.add(this.mesh1);
+            }
+
+            animateAction() {
+                this.mesh1.rotation.x += 0.01;
+            }
+
+            animate() {
+                this.animateAction();
+                this.render();
+                const that = this;
+                requestAnimationFrame(() => {
+                    this.animate();
+                });
+            }
+        }
+
+        const program = new Program();
+        program.placeObject();
+        program.animate();
+
+    </script>
+</body>
+
+</html>

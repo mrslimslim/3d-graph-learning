@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #box {
+            border: none;
+            width: 100%;
+            height: 600px;
+            background-color: #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="box"></div>
+    <script src="/lib/three.js"></script>
+    <script>
+        window.onload = () => {
+            let renderer, width, height;
+            function initTHREE() {
+                const box = document.querySelector('#box');
+                width = box.clientWidth;
+                height = box.clientHeight;
+
+                renderer = new THREE.WebGLRenderer({
+                    antialias: true
+                });
+
+                renderer.setSize(width, height);
+
+                box.appendChild(renderer.domElement);
+
+                renderer.setClearColor(0xFFFFFF, 1.0);
+            }
+
+            let camera;
+
+            function initCamera() {
+                camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+                camera.position.x = 0;
+                camera.position.y = 0;
+                camera.position.z = 1000;
+
+            }
+
+            let scene;
+            function initScene() {
+                scene = new THREE.Scene();
+            }
+
+            let light;
+            function initLight() {
+                light = new THREE.DirectionalLight(0xFF0000, 1.0, 0);
+                light.position.set(100, 100, 200);
+                scene.add(light);
+            }
+
+            function initObject() {
+                const geometry = new THREE.Geometry();
+                // webgl 不支持 lineWidth 
+                const material = new THREE.LineBasicMaterial({ vertexColors: true });
+
+                // 线的材质可以有2点的颜色决定
+                let p1 = new THREE.Vector3(-100, 0, 0);
+                let p2 = new THREE.Vector3(100, 0, 0);
+                const color1 = new THREE.Color(0x444444);
+                const color2 = new THREE.Color(0xff0000);
+                geometry.vertices.push(p1);
+                geometry.vertices.push(p2);
+                geometry.colors.push(color1);
+                geometry.colors.push(color2);
+                var line = new THREE.Line(geometry, material, THREE.LineSegments);
+                scene.add(line);
+            }
+
+            function threeMain() {
+                initTHREE();
+                initCamera();
+                initScene();
+                initLight();
+                initObject();
+                renderer.clear();
+                // render需要场景和相机
+                renderer.render(scene, camera);
+
+            }
+            threeMain();
+        }
+    </script>
+</body>
+
+</html>

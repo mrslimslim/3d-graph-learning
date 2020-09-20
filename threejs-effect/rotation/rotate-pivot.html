@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="/lib/three.js"></script>
+    <script src="/lib/OrbitControls.js"></script>
+    <script>
+        class Program {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.mesh1 = null;
+                this.pivot1 = null;
+                this.controls = null;
+                this.init();
+            }
+
+            initScene() {
+                this.scene = new THREE.Scene();
+            }
+
+            initCamera() {
+                this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+                this.camera.position.z = 4;
+                this.camera.position.x = 4;
+                this.camera.position.y = 2;
+                this.camera.up.x = 0;
+                this.camera.up.y = 1;
+                this.camera.up.z = 0;
+                this.camera.lookAt(0, 0, 0);
+            }
+
+            initRenderer() {
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(this.renderer.domElement);
+                this.renderer.setClearColor(0xffffff, 1.0);
+            }
+
+            initLight() {
+                const light = new THREE.DirectionalLight(0xFFffff, 1.0);
+                light.position.set(2, 3, 4);
+                this.scene.add(light);
+            }
+
+            initControls() {
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+
+            }
+
+            addGridHelper() {
+                const gridHelper = new THREE.GridHelper(100, 100);
+                this.scene.add(gridHelper);
+            }
+
+            addAxisHelper() {
+                const axisHelper = new THREE.AxesHelper(100, 100);
+                this.scene.add(axisHelper);
+            }
+
+            init() {
+                this.initScene();
+                this.initCamera();
+                this.initLight();
+                this.addGridHelper();
+                this.addAxisHelper();
+                this.initRenderer();
+                this.initControls();
+                window.addEventListener('resize', () => {
+                    this.windowResize();
+                })
+            }
+
+            render() {
+                this.renderer.clear();
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            windowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.render();
+            }
+
+            placeObject() {
+                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                for (let i = 0; i < geometry.faces.length; i++) {
+                    const randomHex = Math.random() * 0xffffff;
+                    geometry.faces[i].color.setHex(randomHex);
+                }
+                const material = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
+                this.mesh1 = new THREE.Mesh(geometry, material);
+
+                const targetPivotPoint = new THREE.Vector3(1, 1, 1);
+
+                this.pivot1 = new THREE.Object3D();
+                this.pivot1.position.copy(targetPivotPoint);
+                // this.mesh1.position.copy(targetPivotPoint.multiplyScalar(-1));
+                // this.mesh1.position.x = -1;
+                // this.mesh1.position.y = -1;
+                // this.mesh1.position.z = -1;
+                this.mesh1.position.set(-1, -1, -1);
+                this.pivot1.add(this.mesh1)
+                this.scene.add(this.pivot1);
+
+                const axesHelper2 = new THREE.AxesHelper(100, 100);
+                axesHelper2.position.copy(targetPivotPoint);
+                this.scene.add(axesHelper2);
+            }
+
+            animateAction() {
+                this.pivot1.rotation.y += 0.1;
+            }
+
+            animate() {
+                this.animateAction();
+                this.render();
+                this.controls.update();
+                requestAnimationFrame(() => { this.animate() });
+            }
+        }
+
+        const program = new Program();
+        program.placeObject();
+        program.animate();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="/lib/three.js"></script>
+    <script src="/lib/OrbitControls.js"></script>
+    <script>
+        class Program {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.mesh1 = null;
+                this.pivot1 = null;
+                this.controls = null;
+                this.init();
+            }
+
+            initScene() {
+                this.scene = new THREE.Scene();
+            }
+
+            initCamera() {
+                this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+                this.camera.position.z = 1000;
+                this.camera.position.x = 400;
+                this.camera.position.y = 200;
+                this.camera.up.x = 0;
+                this.camera.up.y = 1;
+                this.camera.up.z = 0;
+                this.camera.lookAt(0, 0, 0);
+            }
+
+            initRenderer() {
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(this.renderer.domElement);
+                this.renderer.setClearColor(0xffffff, 1.0);
+            }
+
+            initLight() {
+                const light = new THREE.DirectionalLight(0xFFffff, 1.0);
+                light.position.set(2, 3, 4);
+                this.scene.add(light);
+            }
+
+            initControls() {
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+
+            }
+
+            addGridHelper() {
+                const gridHelper = new THREE.GridHelper(1000, 1000);
+                this.scene.add(gridHelper);
+            }
+
+            addAxisHelper() {
+                const axisHelper = new THREE.AxesHelper(1000, 1000);
+                this.scene.add(axisHelper);
+            }
+
+            init() {
+                this.initScene();
+                this.initCamera();
+                this.initLight();
+                // this.addGridHelper();
+                this.addAxisHelper();
+                this.initRenderer();
+                this.initControls();
+                window.addEventListener('resize', () => {
+                    this.windowResize();
+                })
+            }
+
+            render() {
+                this.renderer.clear();
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            windowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.render();
+            }
+
+            placeObject() {
+                const sunGeometry = new THREE.SphereGeometry(100, 20, 20);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0xFFFF00
+                });
+                const sunMesh = new THREE.Mesh(sunGeometry, material);
+
+                this.scene.add(sunMesh);
+
+
+
+                // mercury
+                this.mercuryPivot = new THREE.Object3D();
+                const mercuryGeometry = new THREE.SphereGeometry(5, 20, 20);
+                const mercuryMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff7f50
+                });
+                this.mercuryMesh = new THREE.Mesh(mercuryGeometry, mercuryMaterial);
+                this.mercuryPivot.add(this.mercuryMesh);
+                this.mercuryMesh.position.set(110, 0, 0);
+                this.scene.add(this.mercuryPivot);
+
+                // venus
+                this.venusPivot = new THREE.Object3D();
+                const venusGeometry = new THREE.SphereGeometry(10, 20, 20);
+                const venusMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff4757
+                });
+                this.venusMesh = new THREE.Mesh(venusGeometry, venusMaterial);
+                this.venusPivot.add(this.venusMesh);
+
+                const venusDegree = 30;
+                this.venusMesh.position.set(140 * Math.cos(venusDegree), 140 * Math.sin(venusDegree), 0);
+                this.scene.add(this.venusPivot);
+
+                const circleGeometry = new THREE.CylinderGeometry(140, 140, 2);
+                const circleMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff0000,
+                    side: THREE.DoubleSide
+                });
+                const circlePivot = new THREE.Object3D();
+                const circle = new THREE.Mesh(circleGeometry, circleMaterial);
+                circle.rotation.x = Math.PI / 2;
+                circlePivot.rotation.y = Math.PI / 2;
+                circlePivot.add(circle);
+                this.scene.add(circlePivot);
+
+
+                // earth
+                this.earthPivot = new THREE.Object3D();
+                const earthGeometry = new THREE.SphereGeometry(10, 20, 20);
+                const earthMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff7f50
+                });
+                this.earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
+                this.earthPivot.add(this.earthMesh);
+                this.earthMesh.position.set(180, 30, 0);
+                this.scene.add(this.earthPivot);
+
+
+
+                // mars
+                this.marsPivot = new THREE.Object3D();
+                const marsGeometry = new THREE.SphereGeometry(8, 20, 20);
+                const marsMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff7f50
+                });
+                this.marsMesh = new THREE.Mesh(marsGeometry, marsMaterial);
+                this.marsPivot.add(this.marsMesh);
+                this.marsMesh.position.set(240, 500, 0);
+                this.scene.add(this.marsPivot);
+
+
+
+                // Jupiter
+                this.jupiterPivot = new THREE.Object3D();
+                const jupiterGeometry = new THREE.SphereGeometry(40, 20, 20);
+                const jupiterMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff7f50
+                });
+                this.jupiterMesh = new THREE.Mesh(jupiterGeometry, jupiterMaterial);
+                this.jupiterPivot.add(this.jupiterMesh);
+                this.jupiterMesh.position.set(320, 8, 0);
+                this.scene.add(this.jupiterPivot);
+
+
+                // saturn
+                this.saturnPivot = new THREE.Object3D();
+                const saturnGeometry = new THREE.SphereGeometry(35, 20, 20);
+                const saturnMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff7f50
+                });
+                this.saturnMesh = new THREE.Mesh(saturnGeometry, saturnMaterial);
+                this.saturnPivot.add(this.saturnMesh);
+                this.saturnMesh.position.set(450, 30, 0);
+                this.scene.add(this.saturnPivot);
+
+
+                // uranus
+                this.uranusPivot = new THREE.Object3D();
+                const uranusGeometry = new THREE.SphereGeometry(15, 20, 20);
+                const uranusMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff7f50
+                });
+                this.uranusMesh = new THREE.Mesh(uranusGeometry, uranusMaterial);
+                this.uranusPivot.add(this.uranusMesh);
+                this.uranusMesh.position.set(680, 20, 0);
+                this.scene.add(this.uranusPivot);
+
+
+                // neptune
+                this.neptunePivot = new THREE.Object3D();
+                const neptuneGeometry = new THREE.SphereGeometry(12, 20, 20);
+                const neptuneMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff7f50
+                });
+                this.neptuneMesh = new THREE.Mesh(neptuneGeometry, neptuneMaterial);
+                this.neptunePivot.add(this.neptuneMesh);
+                this.neptuneMesh.position.set(800, 10, 0);
+                this.scene.add(this.neptunePivot);
+
+            }
+
+            animateAction() {
+
+                // this.mercuryPivot.rotation.y += 0.01;
+
+                // rotateOnAxis
+                // this.venusPivot.rotation.y += 0.01;
+                this.venusPivot.rotateOnAxis(new THREE.Vector3(Math.cos(30 * Math.PI / 180), Math.sin(30 * Math.PI / 180), 0), 0.01)
+                // this.earthPivot.rotation.y += 0.01;
+                // this.marsPivot.rotation.y += 0.01;
+                // this.jupiterPivot.rotation.y += 0.01;
+                // this.saturnPivot.rotation.y += 0.01;
+                // this.uranusPivot.rotation.y += 0.01;
+                // this.neptunePivot.rotation.y += 0.01;
+            }
+
+            animate() {
+                this.animateAction();
+                this.render();
+                this.controls.update();
+                requestAnimationFrame(() => { this.animate() });
+            }
+        }
+
+        const program = new Program();
+        program.placeObject();
+        program.animate();
+    </script>
+</body>
+
+</html>
