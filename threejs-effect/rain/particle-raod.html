@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="/lib/three.js"></script>
+    <script>
+        class Program {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.mesh1 = null;
+                this.init();
+            }
+
+            initScene() {
+                this.scene = new THREE.Scene();
+            }
+
+            initAxesHelper() {
+                const axes = new THREE.AxesHelper(100, 100);
+                this.scene.add(axes)
+            }
+
+            initCamera() {
+                this.camera = new THREE.PerspectiveCamera(
+                    45,
+                    window.innerWidth / window.innerHeight,
+                    1,
+                    10000
+                );
+                this.camera.position.z = 20;
+                this.camera.position.x = 20;
+                this.camera.position.y = 10;
+                this.camera.up.x = 0;
+                this.camera.up.y = 1;
+                this.camera.up.z = 0;
+                this.camera.lookAt(0, 0, 0);
+            }
+
+            initRenderer() {
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(this.renderer.domElement);
+                this.renderer.setClearColor(0x333333, 1.0);
+            }
+
+            initLight() {
+                const light = new THREE.DirectionalLight(0xffffff, 1.0);
+                light.position.set(2, 3, 4);
+                this.scene.add(light);
+            }
+
+            init() {
+                this.initScene();
+                this.initCamera();
+                this.initLight();
+                this.initRenderer();
+                this.initAxesHelper();
+                this.initLoader();
+                window.addEventListener("resize", () => {
+                    this.windowResize();
+                });
+            }
+
+            render() {
+                this.renderer.clear();
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            windowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+                this.render();
+            }
+
+            initLoader() {
+                this.textureLoader = new THREE.TextureLoader();
+            }
+
+            placeObject2() {
+                const HEIGHT = 2;
+                const WIDTH = 30;
+                const blueTexture = this.textureLoader.load('/img/blue-dot.png');
+                const geom = new THREE.Geometry();
+                const size = 0.4;
+                const transparent = true;
+                const opacity = 6;
+                const color = 0xff0000;
+                const sizeAttenuation = true;
+                var material = new THREE.PointsMaterial({
+                    size: size,
+                    transparent: transparent,
+                    opacity: opacity,
+                    map: blueTexture,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: sizeAttenuation,
+                    color: color
+                });
+
+                for (var i = 0; i < 100; i++) {
+                    var particle = new THREE.Vector3(
+                        Math.random() * WIDTH - WIDTH / 2,  // -15 到 15之间
+                        Math.random() * HEIGHT - HEIGHT / 2,  // 0 到 4
+                        1 + (i / 600)  // 
+                    )
+                    particle.velocityY = 0;  // Y轴速度为 0.1 到 0.2之间
+                    particle.velocityX = 0.1 + Math.random() / 5; // -0.12 到 0.12
+                    geom.vertices.push(particle);
+                }
+
+                const cloud = new THREE.Points(geom, material);
+                this.mesh2 = cloud;
+                cloud.sortParticles = true;
+                this.scene.add(cloud)
+            }
+
+            placeObject() {
+                const HEIGHT = 2;
+                const WIDTH = 30;
+                const blueTexture = this.textureLoader.load('/img/blue-dot.png');
+                const geom = new THREE.Geometry();
+                const size = 0.4;
+                const transparent = true;
+                const opacity = 6;
+                const color = 0xffffff;
+                const sizeAttenuation = true;
+                var material = new THREE.PointsMaterial({
+                    size: size,
+                    transparent: transparent,
+                    opacity: opacity,
+                    map: blueTexture,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: sizeAttenuation,
+                    color: color
+                });
+
+                for (var i = 0; i < 1000; i++) {
+                    var particle = new THREE.Vector3(
+                        Math.random() * WIDTH - WIDTH / 2,  // -15 到 15之间
+                        Math.random() * HEIGHT - HEIGHT / 2,  // 0 到 4
+                        1 + (i / 600)  // 
+                    )
+                    particle.velocityY = 0;  // Y轴速度为 0.1 到 0.2之间
+                    particle.velocityX = 0.1 + Math.random() / 5; // -0.12 到 0.12
+                    geom.vertices.push(particle);
+                }
+
+                const cloud = new THREE.Points(geom, material);
+                this.mesh1 = cloud;
+                cloud.sortParticles = true;
+                this.scene.add(cloud)
+
+            }
+
+            animateAction() {
+                const vertices = this.mesh1.geometry.vertices;
+                const vertices2 = this.mesh2.geometry.vertices;
+                vertices.forEach(v => {
+                    // 当前位置
+                    v.x = v.x + v.velocityX;
+                    if (v.x >= 15) v.x = -15;
+                })
+                vertices2.forEach(v => {
+                    // 当前位置
+                    v.x = v.x + v.velocityX;
+                    if (v.x >= 15) v.x = -15;
+                })
+                this.mesh1.geometry.verticesNeedUpdate = true;
+                this.mesh2.geometry.verticesNeedUpdate = true;
+            }
+
+            animate() {
+                this.animateAction();
+                this.render();
+                requestAnimationFrame(() => {
+                    this.animate();
+                });
+            }
+        }
+
+        const program = new Program();
+        program.placeObject();
+        program.placeObject2();
+        program.animate();
+    </script>
+</body>
+
+</html>
