@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+
+    <body>
+        <script src="/lib/three.js"></script>
+        <script src="/lib/OrbitControls.js"></script>
+        <script src="/lib/cga.js"></script>
+        <script src="/lib/d3-interpolate.min.js"></script>
+        <script src="/lib/tween.umd.js"></script>
+        <script>
+            class Program {
+                constructor() {
+                    this.scene = null;
+                    this.camera = null;
+                    this.renderer = null;
+                    this.mesh1 = null;
+                    this.init();
+                }
+
+                initScene() {
+                    this.scene = new THREE.Scene();
+                }
+
+                initCamera() {
+                    this.camera = new THREE.PerspectiveCamera(
+                        45,
+                        window.innerWidth / window.innerHeight,
+                        1,
+                        10000
+                    );
+                    this.camera.position.z = 10;
+                    this.camera.position.x = 5;
+                    this.camera.position.y = 4;
+                    this.camera.up.x = 0;
+                    this.camera.up.y = 1;
+                    this.camera.up.z = 0;
+                    this.camera.lookAt(0, 0, 0);
+                }
+
+                initControls() {
+                    this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                }
+
+                initRenderer() {
+                    this.renderer = new THREE.WebGLRenderer({
+                        antialias: true,
+                    });
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    document.body.appendChild(this.renderer.domElement);
+                    this.renderer.setClearColor(0x333333, 1.0);
+                }
+
+                initLight() {
+                    const light = new THREE.DirectionalLight(0xffffff, 1.0);
+                    light.position.set(2, 3, 4);
+                    this.scene.add(light);
+                }
+
+                initAxesHelper() {
+                    const axesHelper = new THREE.AxesHelper(100, 100);
+                    this.scene.add(axesHelper);
+                }
+
+                init() {
+                    this.initScene();
+                    this.initCamera();
+                    this.initLight();
+                    this.initRenderer();
+                    this.initControls();
+                    this.initAxesHelper();
+                    window.addEventListener("resize", () => {
+                        this.windowResize();
+                    });
+                }
+
+                render() {
+                    this.renderer.clear();
+                    this.renderer.render(this.scene, this.camera);
+                }
+
+                windowResize() {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+                    this.render();
+                }
+
+                placeObject() {
+                    const startVec = new THREE.Vector3(500, 0, 0);
+                    const controlVec = new THREE.Vector3(-400, 0, 20);
+                    const endVec = new THREE.Vector3(-500, 0, 300);
+                    const curve = new THREE.QuadraticBezierCurve3(startVec, controlVec, endVec);
+                    const geometry = new THREE.TubeBufferGeometry(curve, 20, 2, 8, false);
+                    const material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors, side: THREE.BackSide })
+
+                    // 生成渐变色的color数组
+                    const count = geometry.attributes.position.count;
+                    const rgbInterpolate = d3.interpolateHue("#00ffff", "#002222");
+                    for (let index = 0; index < count; index++) {
+                        const t = index / count;
+                        const rgb = rgbInterpolate(t);
+                        const rgbValue = rgb.match(/\d+/g);
+                        // 从 "rgb(1,2,3)" 字符串里 提取出 1,2,3 并 归一化（ 0.0 ~ 1.0）
+                        const r = Number(rgbValue[0]) / 255;
+                        const g = Number(rgbValue[1]) / 255;
+                        const b = Number(rgbValue[2]) / 255;
+
+                        colorArray[3 * index] = r;
+                        colorArray[3 * index + 1] = g;
+                        colorArray[3 * index + 2] = b;
+                    }
+                    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colorArray, 3));
+
+                    this.mesh = new THREE.Mesh(geometry, material);
+                    this.scene.add(this.mesh);
+
+
+                }
+
+                animateAction() {
+                    // 颜色变化
+                    function lightMove() {
+                        new TWEEN.Tween({ value: 0 })
+                            .to({ value: 1 }, 1000)
+                            .onUpdate(function (val) {
+                                // 实现环状数组变化
+                                const anchor = Number((val.value * count).toFixed(0));
+                                const b = colorArray.slice(anchor * 3);
+                                const f = colorArray.slice(0, anchor * 3);
+                                const newColorArray = [].concat(b, f);
+                                this.mesh.geometry.setAttribute("color", new THREE.Float32BufferAttribute(newColorArray, 3));
+                            })
+                            .start();
+                    }
+                    lightMove()
+                }
+
+                animate() {
+                    TWEEN.update();
+                    this.animateAction();
+                    this.controls.update();
+                    this.render();
+                    requestAnimationFrame(() => {
+                        this.animate();
+                    });
+                }
+            }
+
+            const program = new Program();
+            program.placeObject();
+            program.animate();
+        </script>
+    </body>
+
+    </html>
+</body>
+
+</html>
